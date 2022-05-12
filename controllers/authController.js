@@ -89,3 +89,35 @@ export async function login(req, res) {
         res.sendStatus(500);
     }
 }
+
+
+export async function validateToken(req, res) {
+    try {
+        /* VALIDAR TOKEN */
+
+        const { authorization } = req.headers;
+
+        const token = authorization?.replace('Bearer ', '');
+        if (!token) return res.sendStatus(401);
+
+        jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+            if (err) return res.sendStatus(401);
+
+            /* VARIFICAR USUÁRIO */
+
+            const user = await db.collection("users").findOne({email: decoded.email});
+            if(!user) return res.sendStatus(401);
+
+            /* ENVIAR DADOS */
+
+            delete user.password;
+            delete user._id;
+
+            res.send(user);
+        });
+        
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
