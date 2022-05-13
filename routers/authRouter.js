@@ -1,7 +1,8 @@
 import express from 'express';
+import db from "./../controllers/db.js";
 
 
-import {signUp, login, validateToken} from './../controllers/authController.js';
+import { signUp, login, validateToken } from './../controllers/authController.js';
 
 
 const authRouter = express.Router();

@@ -68,18 +68,14 @@ export async function login(req, res) {
 
         const user = await db.collection("users").findOne({ email: login.email });
         if (!user) return res.sendStatus(401);
-        if (
-            !bcrypt.compareSync(login.password, user.password)
-        ) {
+        if (!bcrypt.compareSync(login.password, user.password)) {
             return res.sendStatus(401);
         }
 
         /* ENVIO DO TOKEN */
 
-        const token = jwt.sign(
-            { email: user.email }, 
-            process.env.JWT_SECRET, 
-            { expiresIn: 2592000 }
+        const token = jwt.sign({ email: user.email },
+            process.env.JWT_SECRET, { expiresIn: 2592000 }
         );
 
         res.send(token);
@@ -97,16 +93,17 @@ export async function validateToken(req, res) {
 
         const { authorization } = req.headers;
 
-        const token = authorization?.replace('Bearer ', '');
+        if (!authorization) return res.sendStatus(401);
+        const token = authorization.replace('Bearer ', '');
         if (!token) return res.sendStatus(401);
 
-        jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+        jwt.verify(token, process.env.JWT_SECRET, async(err, decoded) => {
             if (err) return res.sendStatus(401);
 
             /* VARIFICAR USUÁRIO */
 
-            const user = await db.collection("users").findOne({email: decoded.email});
-            if(!user) return res.sendStatus(401);
+            const user = await db.collection("users").findOne({ email: decoded.email });
+            if (!user) return res.sendStatus(401);
 
             /* ENVIAR DADOS */
 
@@ -115,7 +112,7 @@ export async function validateToken(req, res) {
 
             res.send(user);
         });
-        
+
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
